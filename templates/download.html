@@ -1,0 +1,465 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Download {{ file.original_name }} — FileShare Pro{% endblock %}
+
+{% block extra_styles %}
+.download-wrap {
+  min-height: calc(100vh - 200px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 0;
+}
+.download-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  max-width: 540px; width: 100%;
+  overflow: hidden;
+}
+
+/* Header band */
+.dc-header {
+  padding: 32px 36px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.file-type-icon {
+  width: 64px; height: 64px;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; margin-bottom: 20px;
+  flex-shrink: 0;
+}
+.dc-filename {
+  font-size: 20px; font-weight: 600;
+  color: var(--text-main); word-break: break-all;
+  margin-bottom: 6px; letter-spacing: -.3px;
+}
+.dc-meta {
+  display: flex; flex-wrap: wrap; gap: 16px;
+  font-size: 13px; color: var(--text-muted);
+}
+.dc-meta span { display: flex; align-items: center; gap: 5px; }
+
+/* Stats row */
+.dc-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--border);
+}
+.dc-stat {
+  padding: 20px; text-align: center;
+  border-right: 1px solid var(--border);
+}
+.dc-stat:last-child { border-right: none; }
+.dc-stat-num {
+  font-size: 22px; font-weight: 600;
+  color: var(--text-main); letter-spacing: -.5px;
+}
+.dc-stat-label {
+  font-size: 12px; color: var(--text-muted); margin-top: 2px;
+}
+
+/* Body */
+.dc-body { padding: 28px 36px 32px; }
+
+/* Expiry bar */
+.expiry-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; margin-bottom: 20px;
+}
+.expiry-bar.danger { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
+.expiry-bar.warn   { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+.expiry-bar.ok     { background: #f0fdf4; border-color: #86efac; color: #166534; }
+
+/* Password form */
+.pwd-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.pwd-form label {
+  font-size: 13px; font-weight: 600;
+  color: var(--text-main); margin-bottom: 8px; display: block;
+}
+.pwd-input-wrap {
+  display: flex; gap: 8px;
+}
+.pwd-input-wrap input {
+  flex: 1; height: 40px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 14px; font-size: 14px;
+  color: var(--text-main); outline: none;
+  transition: border-color .15s;
+  font-family: 'DM Mono', monospace; letter-spacing: 2px;
+}
+.pwd-input-wrap input:focus { border-color: var(--brand); }
+.pwd-error {
+  font-size: 12px; color: #dc2626; margin-top: 6px;
+  display: flex; align-items: center; gap: 4px;
+}
+
+/* Download button */
+.btn-download {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 14px;
+  background: var(--brand); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-size: 16px; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  transition: background .15s, transform .1s;
+  letter-spacing: -.2px;
+}
+.btn-download:hover  { background: var(--brand-dark); color: #fff; }
+.btn-download:active { transform: scale(.98); }
+.btn-download:disabled {
+  background: var(--border); color: var(--text-muted); cursor: not-allowed;
+}
+
+/* Copy link */
+.copy-link-row {
+  display: flex; gap: 8px; margin-top: 16px;
+}
+.copy-link-input {
+  flex: 1; height: 38px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 12px; font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  outline: none; cursor: text;
+}
+.copy-link-btn {
+  height: 38px; padding: 0 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500;
+  color: var(--text-main); cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s;
+}
+.copy-link-btn:hover { background: var(--brand-dim); color: var(--brand); }
+
+/* Owner card */
+.owner-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-top: 20px; font-size: 13px;
+  text-decoration: none; color: var(--text-main);
+  transition: background .15s;
+}
+.owner-card:hover { background: var(--brand-dim); }
+.owner-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--brand-dim); color: var(--brand);
+  font-weight: 700; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.owner-name { font-weight: 600; color: var(--text-main); }
+.owner-sub  { color: var(--text-muted); margin-top: 1px; }
+
+/* Sidebar */
+.download-sidebar { max-width: 200px; }
+.ad-slot-side {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+  font-size: 12px; color: var(--text-light);
+  min-height: 200px; display: flex;
+  align-items: center; justify-content: center;
+}
+
+/* Expired / not found state */
+.error-state { text-align: center; padding: 48px 36px; }
+.error-state .error-icon {
+  font-size: 48px; margin-bottom: 16px; color: var(--text-muted);
+}
+.error-state h3 {
+  font-size: 20px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;
+}
+.error-state p { font-size: 14px; color: var(--text-muted); }
+
+/* Progress animation */
+@keyframes downloadPulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .5; }
+}
+.downloading { animation: downloadPulse .8s infinite; }
+{% endblock %}
+
+{% block content %}
+<div class="download-wrap">
+  <div class="container">
+
+    {% if file_expired %}
+    <!-- ── EXPIRED STATE ── -->
+    <div class="download-card mx-auto">
+      <div class="error-state">
+        <div class="error-icon"><i class="bi bi-clock-history"></i></div>
+        <h3>This link has expired</h3>
+        <p>The owner set this file to expire and it is no longer available for download.</p>
+        <a href="{% url 'home' %}" class="btn-brand mt-3" style="display:inline-block; text-decoration:none; padding:10px 24px">
+          Go to homepage
+        </a>
+      </div>
+    </div>
+
+    {% else %}
+
+    <div class="row justify-content-center align-items-start g-4">
+
+      <!-- ── MAIN CARD ── -->
+      <div class="col-lg-7 col-md-9">
+        <div class="download-card">
+
+          <!-- Header -->
+          <div class="dc-header">
+            <div class="d-flex align-items-start gap-4">
+
+              <!-- File type icon -->
+              <div class="file-type-icon {% if 'image' in file.mime_type %}
+                style='background:#dcfce7;'{% elif 'pdf' in file.mime_type %}
+                style='background:#fee2e2;'{% elif 'video' in file.mime_type %}
+                style='background:#ede9fe;'{% elif 'zip' in file.mime_type %}
+                style='background:#fef9c3;'{% else %}
+                style='background:var(--brand-dim);'{% endif %}"
+              >
+                {% if "image" in file.mime_type %}
+                  <i class="bi bi-file-image" style="color:#16a34a"></i>
+                {% elif "pdf" in file.mime_type %}
+                  <i class="bi bi-file-pdf" style="color:#dc2626"></i>
+                {% elif "video" in file.mime_type %}
+                  <i class="bi bi-file-play" style="color:#7c3aed"></i>
+                {% elif "zip" in file.mime_type or "archive" in file.mime_type %}
+                  <i class="bi bi-file-zip" style="color:#ca8a04"></i>
+                {% elif "text" in file.mime_type %}
+                  <i class="bi bi-file-text" style="color:#6b7280"></i>
+                {% else %}
+                  <i class="bi bi-file-earmark" style="color:var(--brand)"></i>
+                {% endif %}
+              </div>
+
+              <div class="flex-1" style="min-width:0">
+                <div class="dc-filename">{{ file.original_name }}</div>
+                <div class="dc-meta">
+                  <span><i class="bi bi-hdd"></i>{{ file.size|filesizeformat }}</span>
+                  <span><i class="bi bi-file-earmark"></i>{{ file.mime_type }}</span>
+                  <span><i class="bi bi-calendar3"></i>{{ file.created_at|date:"M j, Y" }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="dc-stats">
+            <div class="dc-stat">
+              <div class="dc-stat-num">{{ file.downloads|intcomma }}</div>
+              <div class="dc-stat-label">Downloads</div>
+            </div>
+            <div class="dc-stat">
+              <div class="dc-stat-num">{{ file.size|filesizeformat }}</div>
+              <div class="dc-stat-label">File size</div>
+            </div>
+            <div class="dc-stat">
+              {% if file.expires_at %}
+                <div class="dc-stat-num" style="font-size:15px">{{ file.expires_at|timeuntil }}</div>
+                <div class="dc-stat-label">Until expiry</div>
+              {% else %}
+                <div class="dc-stat-num" style="font-size:16px">∞</div>
+                <div class="dc-stat-label">Never expires</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div class="dc-body">
+
+            <!-- Expiry warning -->
+            {% if file.expires_at %}
+              {% now "U" as now_ts %}
+              <div class="expiry-bar warn">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                This file expires in <strong>{{ file.expires_at|timeuntil }}</strong> —
+                download it before then.
+              </div>
+            {% endif %}
+
+            <!-- Password form (if protected) -->
+            {% if file.password %}
+            <div class="pwd-form" id="pwdSection">
+              <label><i class="bi bi-lock-fill me-1" style="color:var(--brand)"></i>
+                Password required
+              </label>
+              <div class="pwd-input-wrap">
+                <input type="password" id="pwdInput" placeholder="Enter file password"
+                       onkeydown="if(event.key==='Enter') verifyPassword()">
+                <button class="btn-brand" onclick="verifyPassword()" style="padding:0 18px; white-space:nowrap; font-size:14px">
+                  Unlock
+                </button>
+              </div>
+              <div class="pwd-error d-none" id="pwdError">
+                <i class="bi bi-x-circle-fill"></i>
+                Wrong password, please try again.
+              </div>
+            </div>
+            {% endif %}
+
+            <!-- Download button -->
+            {% if file.password %}
+              <button class="btn-download" id="dlBtn" disabled onclick="startDownload()">
+                <i class="bi bi-lock-fill"></i> Unlock to download
+              </button>
+            {% else %}
+              <button class="btn-download" id="dlBtn" onclick="startDownload()">
+                <i class="bi bi-download"></i> Download file
+              </button>
+            {% endif %}
+
+            <!-- Copy link -->
+            <div class="copy-link-row">
+              <input class="copy-link-input" id="shareUrl" readonly
+                     value="{{ request.build_absolute_uri }}">
+              <button class="copy-link-btn" id="copyBtn"
+                      onclick="copyText(document.getElementById('shareUrl').value, this)">
+                <i class="bi bi-clipboard me-1"></i> Copy link
+              </button>
+            </div>
+
+            <!-- Owner -->
+            <a href="#" class="owner-card">
+              <div class="owner-avatar">{{ file.owner.username|slice:":2"|upper }}</div>
+              <div>
+                <div class="owner-name">{{ file.owner.username }}</div>
+                <div class="owner-sub">View all public files</div>
+              </div>
+              <i class="bi bi-arrow-right ms-auto" style="color:var(--text-muted)"></i>
+            </a>
+
+          </div>
+        </div>
+
+        <!-- Safety note -->
+        <div class="text-center mt-3" style="font-size:12px; color:var(--text-light)">
+          <i class="bi bi-shield-check me-1"></i>
+          All files are scanned for viruses before being made available.
+        </div>
+      </div>
+
+      <!-- ── SIDEBAR ── -->
+      <div class="col-lg-2 col-md-3 d-none d-md-block">
+        {% if not request.user.subscription or request.user.subscription.plan.name == "Free" %}
+        <div id="ad-sidebar"
+             hx-get="/api/ads/serve/download_sidebar/"
+             hx-trigger="load"
+             hx-swap="innerHTML">
+          <div class="ad-slot-side">
+            <span><i class="bi bi-image d-block mb-1" style="font-size:20px"></i>Ad</span>
+          </div>
+        </div>
+
+        <!-- Upgrade nudge -->
+        <div class="card-fs p-3 mt-3" style="font-size:13px">
+          <div style="font-weight:600; color:var(--text-main); margin-bottom:6px">
+            Go ad-free 🚀
+          </div>
+          <div style="color:var(--text-muted); margin-bottom:10px; line-height:1.5">
+            Upgrade to Pro for unlimited uploads and no ads.
+          </div>
+          <a href="{% url 'pricing' %}" class="btn-brand d-block text-center" style="font-size:12px; padding:8px; text-decoration:none">
+            See plans
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const FILE_SLUG  = "{{ file.slug }}";
+  const HAS_PWD    = {{ file.password|yesno:"true,false" }};
+  let   unlockedPwd = "";
+
+  // ── Password verification ──
+  async function verifyPassword() {
+    const pwd = document.getElementById('pwdInput').value.trim();
+    if (!pwd) return;
+
+    const res = await fetch(`/api/files/download/${FILE_SLUG}/?password=${encodeURIComponent(pwd)}`);
+    const err = document.getElementById('pwdError');
+
+    if (res.ok) {
+      unlockedPwd = pwd;
+      document.getElementById('pwdSection').style.opacity = '.5';
+      document.getElementById('pwdSection').style.pointerEvents = 'none';
+
+      const btn = document.getElementById('dlBtn');
+      btn.disabled  = false;
+      btn.innerHTML = '<i class="bi bi-download"></i> Download file';
+      err.classList.add('d-none');
+    } else {
+      err.classList.remove('d-none');
+      document.getElementById('pwdInput').style.borderColor = '#dc2626';
+      setTimeout(() => document.getElementById('pwdInput').style.borderColor = '', 2000);
+    }
+  }
+
+  // ── Download ──
+  async function startDownload() {
+    const btn = document.getElementById('dlBtn');
+    const origHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-hourglass-split downloading"></i> Preparing download…';
+    btn.disabled = true;
+
+    let url = `/api/files/download/${FILE_SLUG}/`;
+    if (unlockedPwd) url += `?password=${encodeURIComponent(unlockedPwd)}`;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Failed');
+
+      const data = await res.json();
+
+      // Trigger actual download via hidden <a>
+      const a = document.createElement('a');
+      a.href = data.url;
+      a.download = data.name;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      btn.innerHTML = '<i class="bi bi-check2-circle"></i> Download started!';
+      setTimeout(() => {
+        btn.innerHTML = origHtml;
+        btn.disabled = false;
+      }, 3000);
+
+    } catch (e) {
+      btn.innerHTML = origHtml;
+      btn.disabled = false;
+      showToast('Download failed. Please try again.', 'danger');
+    }
+  }
+</script>
+{% endblock %}

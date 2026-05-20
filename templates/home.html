@@ -1,0 +1,683 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}FileShare Pro — Fast, secure file sharing{% endblock %}
+
+{% block extra_styles %}
+/* ── Hero ── */
+.hero {
+  padding: 80px 0 60px;
+  text-align: center;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--brand-dim); color: var(--brand);
+  font-size: 12px; font-weight: 600; letter-spacing: .5px;
+  text-transform: uppercase;
+  padding: 5px 14px; border-radius: 20px;
+  margin-bottom: 24px;
+}
+.hero h1 {
+  font-size: clamp(36px, 6vw, 60px);
+  font-weight: 600;
+  letter-spacing: -1.5px;
+  line-height: 1.1;
+  color: var(--text-main);
+  margin-bottom: 20px;
+}
+.hero h1 span { color: var(--brand); }
+.hero p.lead {
+  font-size: 18px;
+  color: var(--text-muted);
+  max-width: 520px;
+  margin: 0 auto 36px;
+  line-height: 1.6;
+}
+
+/* Quick-upload strip */
+.quick-upload {
+  display: flex; align-items: center; gap: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  max-width: 520px; margin: 0 auto 56px;
+  overflow: hidden;
+}
+.quick-upload label {
+  flex: 1;
+  padding: 14px 20px;
+  font-size: 14px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.quick-upload label:hover { background: var(--surface); }
+.quick-upload input[type="file"] { display: none; }
+.quick-upload button {
+  background: var(--brand); color: #fff;
+  border: none; padding: 14px 24px;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  transition: background .15s;
+}
+.quick-upload button:hover { background: var(--brand-dark); }
+
+/* Stats row */
+.stat-strip {
+  display: flex; justify-content: center; gap: 48px;
+  flex-wrap: wrap; margin-bottom: 80px;
+}
+.stat-strip .stat-item { text-align: center; }
+.stat-strip .stat-num {
+  font-size: 28px; font-weight: 600;
+  color: var(--text-main); letter-spacing: -.5px;
+}
+.stat-strip .stat-label {
+  font-size: 13px; color: var(--text-muted); margin-top: 2px;
+}
+
+/* Features */
+.section-label {
+  font-size: 12px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--brand); margin-bottom: 12px;
+}
+.section-title {
+  font-size: 34px; font-weight: 600;
+  letter-spacing: -.5px; color: var(--text-main);
+  margin-bottom: 12px;
+}
+.section-sub { font-size: 16px; color: var(--text-muted); max-width: 480px; }
+
+.feature-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  height: 100%;
+  transition: box-shadow .2s, transform .2s;
+}
+.feature-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+.feature-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; margin-bottom: 16px;
+}
+.feature-card h5 {
+  font-size: 16px; font-weight: 600;
+  color: var(--text-main); margin-bottom: 8px;
+}
+.feature-card p {
+  font-size: 14px; color: var(--text-muted);
+  line-height: 1.6; margin: 0;
+}
+
+/* How it works */
+.step-num {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--brand-dim); color: var(--brand);
+  font-weight: 700; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.step-connector {
+  width: 2px; height: 32px;
+  background: var(--border);
+  margin: 6px 0 6px 17px;
+}
+
+/* Pricing preview */
+.pricing-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  height: 100%;
+  position: relative;
+}
+.pricing-card.featured {
+  border-color: var(--brand);
+  border-width: 2px;
+}
+.pricing-card .popular-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--brand); color: #fff;
+  font-size: 11px; font-weight: 600;
+  padding: 3px 14px; border-radius: 20px;
+  white-space: nowrap;
+}
+.price-amount {
+  font-size: 36px; font-weight: 700;
+  color: var(--text-main); letter-spacing: -1px;
+}
+.price-period { font-size: 14px; color: var(--text-muted); font-weight: 400; }
+.feature-list { list-style: none; padding: 0; margin: 0; }
+.feature-list li {
+  font-size: 14px; color: var(--text-muted);
+  padding: 6px 0;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.feature-list li:last-child { border-bottom: none; }
+.feature-list li i { color: var(--brand); font-size: 16px; flex-shrink: 0; }
+
+/* Recent files table */
+.files-table { border-collapse: separate; border-spacing: 0; width: 100%; }
+.files-table th {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .5px; color: var(--text-muted);
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+}
+.files-table td {
+  padding: 12px 16px; font-size: 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.files-table tr:last-child td { border-bottom: none; }
+.files-table tr:hover td { background: var(--surface); }
+
+.file-icon { font-size: 20px; }
+.file-icon.pdf   { color: #e44; }
+.file-icon.image { color: #22c55e; }
+.file-icon.video { color: #8b5cf6; }
+.file-icon.zip   { color: #f59e0b; }
+.file-icon.text  { color: #6b7280; }
+.file-icon.other { color: var(--brand); }
+
+/* CTA banner */
+.cta-section {
+  background: var(--brand);
+  border-radius: var(--radius);
+  padding: 56px 48px;
+  text-align: center;
+  margin: 40px 0 20px;
+}
+.cta-section h2 {
+  font-size: 32px; font-weight: 700;
+  color: #fff; margin-bottom: 12px; letter-spacing: -.5px;
+}
+.cta-section p { color: rgba(255,255,255,.8); margin-bottom: 28px; font-size: 16px; }
+.btn-cta-white {
+  background: #fff; color: var(--brand);
+  font-weight: 600; border: none;
+  padding: 12px 28px; border-radius: var(--radius-sm);
+  font-size: 15px; text-decoration: none;
+  transition: opacity .15s;
+}
+.btn-cta-white:hover { opacity: .9; color: var(--brand-dark); }
+
+/* Ad slot */
+.ad-slot {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  text-align: center;
+  font-size: 12px; color: var(--text-light);
+}
+{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════ HERO ══════════════ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">
+      <i class="bi bi-lightning-charge-fill"></i>
+      No sign-up required for downloads
+    </div>
+
+    <h1>Share files with anyone,<br><span>instantly.</span></h1>
+
+    <p class="lead">
+      Upload once, share forever. Password protection, expiry dates,
+      and smart search — all in one place.
+    </p>
+
+<div class="quick-upload" id="heroUploadZone">
+  <label for="heroFile" id="heroLabel">
+    <i class="bi bi-paperclip" style="font-size:18px; color:var(--brand)"></i>
+    <span id="heroFileName">Drop a file or click to browse…</span>
+  </label>
+  <input type="file" id="heroFile">
+  <button id="heroBtn" onclick="heroUpload()">
+    <i class="bi bi-upload me-1"></i>
+    <span id="heroBtnText">Upload</span>
+  </button>
+</div>
+
+
+    <!-- Quick upload strip -->
+    <div id="heroResult" style="max-width:520px; margin: -40px auto 40px; display:none">
+  <div style="background:var(--card-bg); border:1px solid var(--border);
+              border-radius:var(--radius-sm); padding:14px 16px;
+              display:flex; align-items:center; gap:12px; font-size:13px">
+    <i class="bi bi-check-circle-fill" style="color:#16a34a; font-size:18px"></i>
+    <div style="flex:1; min-width:0">
+      <div style="font-weight:600; color:var(--text-main)">Uploaded!</div>
+      <div id="heroShareUrl" style="color:var(--text-muted); font-family:'DM Mono',monospace;
+           font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap"></div>
+    </div>
+    <button onclick="copyHeroLink()"
+            style="background:var(--brand);color:#fff;border:none;
+                   border-radius:6px;padding:6px 14px;font-size:12px;
+                   font-weight:600;cursor:pointer;white-space:nowrap">
+      Copy link
+    </button>
+  </div>
+</div>
+    <!-- Stats -->
+    <div class="stat-strip">
+      <div class="stat-item">
+        <div class="stat-num">{{ stats.total_files|default:"12,482"|intcomma }}</div>
+        <div class="stat-label">Files shared</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">{{ stats.total_downloads|default:"98,210"|intcomma }}</div>
+        <div class="stat-label">Downloads</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">{{ stats.total_users|default:"3,100"|intcomma }}</div>
+        <div class="stat-label">Happy users</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">99.9%</div>
+        <div class="stat-label">Uptime</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ AD SLOT (home top — free users) ══════════════ -->
+{% if not request.user.subscription or request.user.subscription.plan.name == "Free" %}
+<div class="container mb-5">
+  <div hx-get="/api/ads/serve/home_top/"
+           hx-trigger="load"
+           hx-swap="innerHTML"
+           style="min-height:120px">
+        <div class="ad-slot">
+          <i class="bi bi-image me-1"></i>Loading ad…
+        </div>
+      </div>
+      <div class="upload-card mt-3" style="padding:20px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px">
+          Go ad-free 🚀
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.5">
+          Unlimited uploads and no ads with Pro.
+        </div>
+        <a href="{% url 'pricing' %}" class="btn-upload"
+           style="font-size:13px;padding:9px;text-decoration:none">
+          See plans
+        </a>
+      </div>
+</div>
+{% endif %}
+
+<!-- ══════════════ FEATURES ══════════════ -->
+<section class="py-5">
+  <div class="container">
+    <div class="row align-items-center mb-5">
+      <div class="col-md-6">
+        <div class="section-label">Why FileShare Pro</div>
+        <h2 class="section-title">Everything you need<br>to share files securely.</h2>
+        <p class="section-sub">Built for developers, teams, and anyone who needs reliable file delivery.</p>
+      </div>
+    </div>
+
+    <div class="row g-3">
+
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#ede9fe">
+            <i class="bi bi-shield-lock-fill" style="color:#7c3aed"></i>
+          </div>
+          <h5>Password protection</h5>
+          <p>Lock any file with a password. Only people with the correct password can download it.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#dcfce7">
+            <i class="bi bi-clock-history" style="color:#16a34a"></i>
+          </div>
+          <h5>Expiry links</h5>
+          <p>Set files to auto-expire after 1, 7, or 30 days. Expired files are cleaned up automatically.</p>
+        </div>
+      </div>
+
+
+
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:var(--brand-dim)">
+            <i class="bi bi-link-45deg" style="color:var(--brand)"></i>
+          </div>
+          <h5>Short links</h5>
+          <p>Every file gets a unique 12-character slug. Share a compact URL that works everywhere.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#fce7f3">
+            <i class="bi bi-bar-chart-line-fill" style="color:#db2777"></i>
+          </div>
+          <h5>Download analytics</h5>
+          <p>See exactly how many times each file has been downloaded — always up to date.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#e0f2fe">
+            <i class="bi bi-cloud-arrow-up-fill" style="color:#0284c7"></i>
+          </div>
+          <h5>S3-backed storage</h5>
+          <p>Files stored on AWS S3 with presigned URLs. No downtime, no data loss, global CDN.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ HOW IT WORKS ══════════════ -->
+<section class="py-5" style="background:var(--card-bg); border-top:1px solid var(--border); border-bottom:1px solid var(--border)">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-5 mb-4 mb-md-0">
+        <div class="section-label">How it works</div>
+        <h2 class="section-title">Up and running<br>in 3 steps.</h2>
+        <p class="section-sub">No complicated setup. Just upload, share, and done.</p>
+      </div>
+      <div class="col-md-6 offset-md-1">
+
+        <div class="d-flex gap-3 align-items-start">
+          <div>
+            <div class="step-num">1</div>
+            <div class="step-connector"></div>
+          </div>
+          <div class="pt-1">
+            <div style="font-weight:600; color:var(--text-main); margin-bottom:4px">Create an account</div>
+            <div style="font-size:14px; color:var(--text-muted); line-height:1.6">
+              Sign up for free in seconds. No credit card required. Get 5 uploads free every month.
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-3 align-items-start">
+          <div>
+            <div class="step-num">2</div>
+            <div class="step-connector"></div>
+          </div>
+          <div class="pt-1">
+            <div style="font-weight:600; color:var(--text-main); margin-bottom:4px">Upload your file</div>
+            <div style="font-size:14px; color:var(--text-muted); line-height:1.6">
+              Drag & drop any file up to 50 MB (more on paid plans). Set password and expiry optionally.
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-3 align-items-start">
+          <div>
+            <div class="step-num">3</div>
+          </div>
+          <div class="pt-1">
+            <div style="font-weight:600; color:var(--text-main); margin-bottom:4px">Share the link</div>
+            <div style="font-size:14px; color:var(--text-muted); line-height:1.6">
+              Copy your unique short link and share it anywhere. Recipients download instantly — no account needed.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ RECENT PUBLIC FILES ══════════════ -->
+{% if recent_files %}
+<section class="py-5">
+  <div class="container">
+
+
+    <div class="card-fs overflow-hidden">
+      <table class="files-table">
+        <thead>
+          <tr>
+            <th>File</th>
+            <th>Size</th>
+            <th>Owner</th>
+            <th>Downloads</th>
+            <th>Shared</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in recent_files %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                {% if "image" in f.mime_type %}
+                  <i class="bi bi-file-image file-icon image"></i>
+                {% elif "pdf" in f.mime_type %}
+                  <i class="bi bi-file-pdf file-icon pdf"></i>
+                {% elif "video" in f.mime_type %}
+                  <i class="bi bi-file-play file-icon video"></i>
+                {% elif "zip" in f.mime_type or "archive" in f.mime_type %}
+                  <i class="bi bi-file-zip file-icon zip"></i>
+                {% elif "text" in f.mime_type %}
+                  <i class="bi bi-file-text file-icon text"></i>
+                {% else %}
+                  <i class="bi bi-file-earmark file-icon other"></i>
+                {% endif %}
+                <span style="font-weight:500">{{ f.original_name|truncatechars:36 }}</span>
+              </div>
+            </td>
+            <td style="color:var(--text-muted)">
+              {% if f.size > 1048576 %}
+                {{ f.size|filesizeformat }}
+              {% else %}
+                {{ f.size|filesizeformat }}
+              {% endif %}
+            </td>
+            <td style="color:var(--text-muted)">{{ f.owner.username }}</td>
+            <td>
+              <span style="font-size:13px; color:var(--text-muted)">
+                <i class="bi bi-download me-1"></i>{{ f.downloads|intcomma }}
+              </span>
+            </td>
+            <td style="color:var(--text-muted); font-size:13px">{{ f.created_at|timesince }} ago</td>
+            <td>
+
+              {% if f.slug %}
+              <a href="{% url 'download' f.slug %}"
+                 class="btn-brand" style="font-size:12px; padding:6px 14px">
+                Download
+              </a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ══════════════ PRICING PREVIEW ══════════════ -->
+<section class="py-5" style="background:var(--card-bg); border-top:1px solid var(--border); border-bottom:1px solid var(--border)">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="section-label">Pricing</div>
+      <h2 class="section-title">Simple, transparent pricing.</h2>
+      <p class="section-sub mx-auto">Start free. Upgrade when you need more.</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+
+      <!-- Free -->
+      <div class="col-md-4">
+        <div class="pricing-card">
+          <h5 style="font-weight:600; color:var(--text-main)">Free</h5>
+          <div class="my-3">
+            <span class="price-amount">$0</span>
+            <span class="price-period">/month</span>
+          </div>
+          <ul class="feature-list mb-4">
+            <li><i class="bi bi-check2"></i>5 uploads / month</li>
+            <li><i class="bi bi-check2"></i>50 MB max file size</li>
+            <li><i class="bi bi-check2"></i>500 MB storage</li>
+            <li><i class="bi bi-check2"></i>Public links</li>
+            <li><i class="bi bi-dash" style="color:var(--text-light)"></i><span style="color:var(--text-light)">No password protection</span></li>
+          </ul>
+          <a href="{% url 'register' %}" class="btn-outline-fs d-block text-center" style="padding:10px">
+            Get started free
+          </a>
+        </div>
+      </div>
+
+      <!-- Pro -->
+      <div class="col-md-4">
+        <div class="pricing-card featured">
+          <div class="popular-badge">Most popular</div>
+          <h5 style="font-weight:600; color:var(--text-main)">Pro</h5>
+          <div class="my-3">
+            <span class="price-amount">$9</span>
+            <span class="price-period">/month</span>
+          </div>
+          <ul class="feature-list mb-4">
+            <li><i class="bi bi-check2"></i>Unlimited uploads</li>
+            <li><i class="bi bi-check2"></i>500 MB max file size</li>
+            <li><i class="bi bi-check2"></i>50 GB storage</li>
+            <li><i class="bi bi-check2"></i>Password protection</li>
+            <li><i class="bi bi-check2"></i>No ads</li>
+          </ul>
+          <a href="{% url 'pricing' %}" class="btn-brand d-block text-center" style="padding:10px">
+            Upgrade to Pro
+          </a>
+        </div>
+      </div>
+
+      <!-- Business -->
+      <div class="col-md-4">
+        <div class="pricing-card">
+          <h5 style="font-weight:600; color:var(--text-main)">Business</h5>
+          <div class="my-3">
+            <span class="price-amount">$29</span>
+            <span class="price-period">/month</span>
+          </div>
+          <ul class="feature-list mb-4">
+            <li><i class="bi bi-check2"></i>Unlimited uploads</li>
+            <li><i class="bi bi-check2"></i>5 GB max file size</li>
+            <li><i class="bi bi-check2"></i>1 TB storage</li>
+            <li><i class="bi bi-check2"></i>Password protection</li>
+            <li><i class="bi bi-check2"></i>Priority support</li>
+          </ul>
+          <a href="{% url 'pricing' %}" class="btn-outline-fs d-block text-center" style="padding:10px">
+            Contact sales
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ CTA BANNER ══════════════ -->
+<div class="container">
+  <div class="cta-section">
+    <h2>Ready to share your first file?</h2>
+    <p>Join thousands of users already sharing files with FileShare Pro.</p>
+    {% if user.is_authenticated %}
+      <a href="{% url 'upload' %}" class="btn-cta-white">
+        <i class="bi bi-upload me-2"></i>Upload a file
+      </a>
+    {% else %}
+      <a href="{% url 'register' %}" class="btn-cta-white">
+        <i class="bi bi-person-plus me-2"></i>Create free account
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const heroFile = document.getElementById('heroFile');
+let heroShareLink = '';
+
+heroFile.addEventListener('change', () => {
+  if (heroFile.files.length) {
+    document.getElementById('heroFileName').textContent = heroFile.files[0].name;
+  }
+});
+
+async function heroUpload() {
+  if (!heroFile.files.length) {
+    heroFile.click();   // нет файла — открываем picker
+    return;
+  }
+
+  {% if not user.is_authenticated %}
+    // не залогинен — редиректим на регистрацию
+    window.location.href = "{% url 'register' %}";
+    return;
+  {% endif %}
+
+  const btn     = document.getElementById('heroBtn');
+  const btnText = document.getElementById('heroBtnText');
+
+  btn.disabled  = true;
+  btnText.textContent = 'Uploading…';
+
+  const fd = new FormData();
+  fd.append('file', heroFile.files[0]);
+
+  try {
+    const res = await fetch('/api/files/upload/', {
+      method:  'POST',
+      headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+      body:    fd,
+    });
+
+    if (res.status === 201) {
+      const data = await res.json();
+      heroShareLink = data.share_url || `${location.origin}/f/${data.slug}/`;
+
+      document.getElementById('heroShareUrl').textContent = heroShareLink;
+      document.getElementById('heroResult').style.display = 'block';
+
+      btnText.textContent = 'Upload another';
+      btn.disabled = false;
+      heroFile.value = '';
+      document.getElementById('heroFileName').textContent = 'Drop a file or click to browse…';
+    } else {
+      const err = await res.json();
+      showToast(err.detail || 'Upload failed.', 'danger');
+      btn.disabled = false;
+      btnText.textContent = 'Upload';
+    }
+  } catch {
+    showToast('Upload failed — check connection.', 'danger');
+    btn.disabled = false;
+    btnText.textContent = 'Upload';
+  }
+}
+
+function copyHeroLink() {
+  navigator.clipboard.writeText(heroShareLink)
+    .then(() => showToast('Link copied!'));
+}
+</script>
+{% endblock %}

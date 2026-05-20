@@ -1,0 +1,387 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing — FileShare Pro{% endblock %}
+
+{% block extra_styles %}
+.pricing-header {
+  text-align: center;
+  padding: 56px 0 48px;
+}
+.pricing-header h1 {
+  font-size: 40px; font-weight: 700;
+  letter-spacing: -1px; color: var(--text-main);
+  margin-bottom: 12px;
+}
+.pricing-header p {
+  font-size: 17px; color: var(--text-muted); max-width: 440px; margin: 0 auto;
+}
+
+/* Plan cards */
+.plan-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px 32px;
+  height: 100%;
+  position: relative;
+  transition: box-shadow .2s, transform .2s;
+}
+.plan-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+.plan-card.featured {
+  border-color: var(--brand);
+  border-width: 2px;
+}
+.popular-badge {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: var(--brand); color: #fff;
+  font-size: 11px; font-weight: 700; letter-spacing: .5px;
+  padding: 4px 16px; border-radius: 20px; white-space: nowrap;
+  text-transform: uppercase;
+}
+.plan-name {
+  font-size: 14px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .5px; color: var(--text-muted); margin-bottom: 12px;
+}
+.plan-price {
+  font-size: 44px; font-weight: 700;
+  color: var(--text-main); letter-spacing: -1.5px; line-height: 1;
+}
+.plan-price sup { font-size: 20px; font-weight: 500; vertical-align: super; }
+.plan-period { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+.plan-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+.plan-features { list-style: none; padding: 0; margin: 0 0 28px; }
+.plan-features li {
+  font-size: 14px; color: var(--text-muted);
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 10px; line-height: 1.4;
+}
+.plan-features li:last-child { border-bottom: none; }
+.plan-features li i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.plan-features li i.bi-check2 { color: var(--brand); }
+.plan-features li i.bi-dash   { color: var(--text-light); }
+.plan-features li.muted       { color: var(--text-light); }
+
+.btn-plan {
+  display: block; width: 100%; padding: 12px;
+  border-radius: var(--radius-sm); font-size: 15px; font-weight: 600;
+  text-align: center; text-decoration: none; cursor: pointer; border: none;
+  transition: background .15s, opacity .15s;
+}
+.btn-plan-primary  { background: var(--brand); color: #fff; }
+.btn-plan-primary:hover { background: var(--brand-dark); color: #fff; }
+.btn-plan-outline  { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+.btn-plan-outline:hover { background: var(--surface); }
+.btn-plan-current  { background: var(--surface); color: var(--text-muted); cursor: default; border: 1px solid var(--border); }
+
+/* Current plan highlight */
+.current-indicator {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #dcfce7; color: #166534;
+  font-size: 11px; font-weight: 600;
+  padding: 3px 10px; border-radius: 20px; margin-bottom: 16px;
+}
+
+/* FAQ */
+.faq-item {
+  border-bottom: 1px solid var(--border); padding: 20px 0;
+}
+.faq-item:last-child { border-bottom: none; }
+.faq-q {
+  font-size: 15px; font-weight: 600; color: var(--text-main);
+  cursor: pointer; display: flex; justify-content: space-between;
+  align-items: center; user-select: none;
+}
+.faq-a {
+  font-size: 14px; color: var(--text-muted);
+  line-height: 1.6; margin-top: 10px;
+  display: none;
+}
+.faq-a.open { display: block; }
+
+/* Comparison table */
+.compare-table {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  font-size: 14px;
+}
+.compare-table th {
+  padding: 12px 16px; text-align: center;
+  font-size: 13px; font-weight: 600; color: var(--text-muted);
+  border-bottom: 2px solid var(--border);
+}
+.compare-table th:first-child { text-align: left; }
+.compare-table td {
+  padding: 14px 16px; text-align: center;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.compare-table td:first-child {
+  text-align: left; color: var(--text-main); font-weight: 500;
+}
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table tr:hover td { background: var(--surface); }
+.check { color: var(--brand); font-size: 16px; }
+.cross { color: var(--text-light); font-size: 16px; }
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Header ── -->
+<div class="pricing-header">
+  <div style="display:inline-flex; align-items:center; gap:6px;
+              background:var(--brand-dim); color:var(--brand);
+              font-size:12px; font-weight:600; letter-spacing:.5px;
+              text-transform:uppercase; padding:5px 14px;
+              border-radius:20px; margin-bottom:20px">
+    <i class="bi bi-lightning-charge-fill"></i> Simple pricing
+  </div>
+  <h1>Pay for what you need.</h1>
+  <p>Start free. Upgrade when your files need more room.</p>
+</div>
+
+<!-- ── Plan cards ── -->
+<div class="container pb-5">
+  <div class="row g-4 justify-content-center mb-5">
+
+    {% for plan in plans %}
+    <div class="col-lg-4 col-md-6">
+      <div class="plan-card {% if plan.name == 'Pro' %}featured{% endif %}">
+
+        {% if plan.name == "Pro" %}
+          <div class="popular-badge">Most popular</div>
+        {% endif %}
+
+        {% if current_plan == plan.name %}
+          <div class="current-indicator">
+            <i class="bi bi-check-circle-fill"></i> Current plan
+          </div>
+        {% endif %}
+
+        <div class="plan-name">{{ plan.name }}</div>
+
+        <div class="plan-price">
+          {% if plan.price_monthly == 0 %}
+            <sup></sup>Free
+          {% else %}
+            <sup>$</sup>{{ plan.price_monthly|floatformat:0 }}
+          {% endif %}
+        </div>
+        <div class="plan-period">
+          {% if plan.price_monthly == 0 %}forever free{% else %}per month{% endif %}
+        </div>
+
+        <hr class="plan-divider">
+
+        <ul class="plan-features">
+          <li>
+            <i class="bi bi-check2"></i>
+            {% if plan.limit_type == "unlimited" %}
+              Unlimited uploads
+            {% else %}
+              {{ plan.upload_limit }} uploads / month
+            {% endif %}
+          </li>
+          <li>
+            <i class="bi bi-check2"></i>
+            {{ plan.max_file_size|filesizeformat }} max file size
+          </li>
+          <li>
+            <i class="bi bi-check2"></i>
+            {{ plan.storage_quota|filesizeformat }} storage
+          </li>
+          <li>
+            {% if plan.name == "Free" %}
+              <i class="bi bi-dash"></i>
+              <span class="muted">No password protection</span>
+            {% else %}
+              <i class="bi bi-check2"></i> Password-protected links
+            {% endif %}
+          </li>
+          <li>
+            {% if plan.name == "Free" %}
+              <i class="bi bi-dash"></i>
+              <span class="muted">Ads shown</span>
+            {% else %}
+              <i class="bi bi-check2"></i> Ad-free experience
+            {% endif %}
+          </li>
+          <li>
+            {% if plan.name == "Business" %}
+              <i class="bi bi-check2"></i> Priority support
+            {% else %}
+              <i class="bi bi-dash"></i>
+              <span class="muted">Community support</span>
+            {% endif %}
+          </li>
+        </ul>
+
+        {% if current_plan == plan.name %}
+          <span class="btn-plan btn-plan-current">Current plan</span>
+        {% elif plan.price_monthly == 0 %}
+          {% if user.is_authenticated %}
+            <span class="btn-plan btn-plan-outline">Free plan</span>
+          {% else %}
+            <a href="{% url 'register' %}" class="btn-plan btn-plan-outline">
+              Get started free
+            </a>
+          {% endif %}
+        {% else %}
+          {% if user.is_authenticated %}
+            <a href="{% url 'checkout' plan.id %}"
+               class="btn-plan {% if plan.name == 'Pro' %}btn-plan-primary{% else %}btn-plan-outline{% endif %}">
+              Upgrade to {{ plan.name }}
+            </a>
+          {% else %}
+            <a href="{% url 'register' %}"
+               class="btn-plan {% if plan.name == 'Pro' %}btn-plan-primary{% else %}btn-plan-outline{% endif %}">
+              Get started
+            </a>
+          {% endif %}
+        {% endif %}
+
+      </div>
+    </div>
+    {% empty %}
+    <!-- Fallback if no plans in DB yet -->
+    <div class="col-12 text-center" style="color:var(--text-muted); padding:40px">
+      <i class="bi bi-exclamation-circle" style="font-size:32px; display:block; margin-bottom:12px"></i>
+      No plans configured yet. Add plans in the
+      <a href="{% url 'admin:index' %}">Django admin</a>.
+    </div>
+    {% endfor %}
+
+  </div>
+
+  <!-- ── Comparison table ── -->
+  <div class="row justify-content-center mb-5">
+    <div class="col-lg-10">
+      <h2 style="font-size:24px; font-weight:600; text-align:center;
+                 margin-bottom:24px; color:var(--text-main)">
+        Full comparison
+      </h2>
+      <div class="card-fs overflow-hidden">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Free</th>
+              <th style="color:var(--brand)">Pro</th>
+              <th>Business</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Monthly uploads</td>
+              <td>5</td><td>Unlimited</td><td>Unlimited</td>
+            </tr>
+            <tr>
+              <td>Max file size</td>
+              <td>50 MB</td><td>500 MB</td><td>5 GB</td>
+            </tr>
+            <tr>
+              <td>Storage quota</td>
+              <td>500 MB</td><td>50 GB</td><td>1 TB</td>
+            </tr>
+            <tr>
+              <td>Password-protected links</td>
+              <td><i class="bi bi-x-lg cross"></i></td>
+              <td><i class="bi bi-check2 check"></i></td>
+              <td><i class="bi bi-check2 check"></i></td>
+            </tr>
+            <tr>
+              <td>Expiring links</td>
+              <td><i class="bi bi-check2 check"></i></td>
+              <td><i class="bi bi-check2 check"></i></td>
+              <td><i class="bi bi-check2 check"></i></td>
+            </tr>
+            <tr>
+              <td>Ad-free</td>
+              <td><i class="bi bi-x-lg cross"></i></td>
+              <td><i class="bi bi-check2 check"></i></td>
+              <td><i class="bi bi-check2 check"></i></td>
+            </tr>
+            <tr>
+              <td>Download analytics</td>
+              <td><i class="bi bi-check2 check"></i></td>
+              <td><i class="bi bi-check2 check"></i></td>
+              <td><i class="bi bi-check2 check"></i></td>
+            </tr>
+            <tr>
+              <td>Priority support</td>
+              <td><i class="bi bi-x-lg cross"></i></td>
+              <td><i class="bi bi-x-lg cross"></i></td>
+              <td><i class="bi bi-check2 check"></i></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FAQ ── -->
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <h2 style="font-size:24px; font-weight:600; text-align:center;
+                 margin-bottom:28px; color:var(--text-main)">
+        Frequently asked questions
+      </h2>
+      <div class="card-fs" style="padding:8px 32px">
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            Can I cancel anytime?
+            <i class="bi bi-plus-lg"></i>
+          </div>
+          <div class="faq-a">
+            Yes. Cancel anytime from your profile page. You keep access until the end of your billing period.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            What happens to my files if I downgrade?
+            <i class="bi bi-plus-lg"></i>
+          </div>
+          <div class="faq-a">
+            Your existing files remain accessible. New uploads will be limited to the Free plan quota.
+            Files over the quota won't be deleted — you just can't add new ones until you free up space.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            Is there a free trial for Pro?
+            <i class="bi bi-plus-lg"></i>
+          </div>
+          <div class="faq-a">
+            The Free plan is your trial — use it as long as you want. No credit card needed.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            What payment methods do you accept?
+            <i class="bi bi-plus-lg"></i>
+          </div>
+          <div class="faq-a">
+            We accept all major credit and debit cards via Stripe. No PayPal at this time.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function toggleFaq(el) {
+    const answer = el.nextElementSibling;
+    const icon   = el.querySelector('i');
+    answer.classList.toggle('open');
+    icon.className = answer.classList.contains('open')
+      ? 'bi bi-dash-lg' : 'bi bi-plus-lg';
+  }
+</script>
+{% endblock %}

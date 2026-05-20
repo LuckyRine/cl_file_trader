@@ -1,0 +1,457 @@
+{% extends "base.html" %}
+{% block title %}Upload — FileShare Pro{% endblock %}
+
+{% block extra_styles %}
+.upload-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 40px;
+}
+.page-title {
+  font-size: 24px; font-weight: 600;
+  color: var(--text-main); letter-spacing: -.4px; margin-bottom: 4px;
+}
+.page-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
+
+/* Drop zone */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  position: relative;
+  margin-bottom: 24px;
+}
+.drop-zone:hover,
+.drop-zone.dragover {
+  border-color: var(--brand);
+  background: var(--brand-dim);
+}
+.drop-zone.has-file {
+  border-color: var(--brand);
+  background: var(--brand-dim);
+}
+/* invisible input covers the entire zone so clicking anywhere opens picker */
+.drop-zone input[type="file"] {
+  position: absolute; inset: 0;
+  opacity: 0; cursor: pointer;
+  width: 100%; height: 100%;
+  z-index: 2;
+}
+.drop-icon {
+  font-size: 40px; color: var(--brand);
+  margin-bottom: 12px; display: block;
+  transition: transform .2s;
+  position: relative; z-index: 1;
+}
+.drop-zone:hover .drop-icon,
+.drop-zone.dragover .drop-icon { transform: translateY(-4px); }
+.drop-text {
+  font-size: 15px; color: var(--text-main);
+  font-weight: 500; position: relative; z-index: 1;
+}
+.drop-hint {
+  font-size: 13px; color: var(--text-muted);
+  margin-top: 4px; position: relative; z-index: 1;
+}
+
+/* Chosen file strip */
+.file-chosen {
+  display: none;
+  align-items: center; gap: 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--brand);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-top: 14px;
+  font-size: 13px;
+  position: relative; z-index: 3;
+}
+.file-chosen.show { display: flex; }
+.file-chosen-name {
+  flex: 1; font-weight: 500; color: var(--text-main);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.file-chosen-size { color: var(--text-muted); white-space: nowrap; }
+.file-chosen-clear {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 16px; padding: 0; line-height: 1;
+  z-index: 4; position: relative;
+}
+.file-chosen-clear:hover { color: #dc2626; }
+
+/* Form */
+.form-label {
+  font-size: 13px; font-weight: 500;
+  color: var(--text-main); margin-bottom: 6px; display: block;
+}
+.form-select, .form-control {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-main);
+  font-size: 14px; padding: 9px 14px; width: 100%;
+  outline: none; transition: border-color .15s;
+  appearance: auto;
+}
+.form-select:focus, .form-control:focus {
+  border-color: var(--brand); background: var(--card-bg);
+}
+
+/* Upload button */
+.btn-upload {
+  width: 100%; padding: 12px;
+  background: var(--brand); color: #fff; border: none;
+  border-radius: var(--radius-sm); font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: background .15s, opacity .15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 8px; text-decoration: none;
+}
+.btn-upload:hover    { background: var(--brand-dark); color: #fff; }
+.btn-upload:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Progress */
+.upload-progress { display: none; margin-top: 16px; }
+.upload-progress.show { display: block; }
+.progress-track {
+  height: 6px; background: var(--border);
+  border-radius: 3px; overflow: hidden; margin-bottom: 6px;
+}
+.progress-fill {
+  height: 100%; background: var(--brand);
+  border-radius: 3px; width: 0%; transition: width .2s ease;
+}
+.progress-label { font-size: 12px; color: var(--text-muted); }
+
+/* Result */
+.result-card {
+  display: none; border-radius: var(--radius-sm);
+  padding: 20px; margin-top: 20px;
+  background: #f0fdf4; border: 1px solid #86efac;
+}
+.result-card.show  { display: block; }
+.result-card.error { background: #fef2f2; border-color: #fca5a5; }
+.result-link {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 14px; margin-top: 12px;
+  font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text-main);
+}
+.result-link span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn-copy {
+  background: var(--brand); color: #fff; border: none;
+  border-radius: 6px; padding: 5px 12px;
+  font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.btn-copy:hover { background: var(--brand-dark); }
+
+.ad-slot {
+  background: var(--surface); border: 1px dashed var(--border);
+  border-radius: var(--radius-sm); padding: 16px; text-align: center;
+  font-size: 12px; color: var(--text-light);
+  min-height: 120px; display: flex; align-items: center; justify-content: center;
+}
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="upload-card">
+
+        <div class="page-title">Upload a file</div>
+        <div class="page-sub">
+          <span class="plan-badge plan-{{ request.user.subscription.plan.name|default:'Free'|lower }}">
+            {{ request.user.subscription.plan.name|default:"Free" }}
+          </span>
+          &nbsp;—&nbsp;
+          {% if uploads_left == "∞" %}
+            Unlimited uploads
+          {% else %}
+            <strong>{{ uploads_left }}</strong> uploads remaining this month
+          {% endif %}
+        </div>
+
+        <!-- ── Drop zone ── -->
+        <div class="drop-zone" id="dropZone">
+          <!-- covers entire zone — clicking anywhere opens file picker -->
+          <input type="file" id="fileInput">
+
+          <i class="bi bi-cloud-arrow-up drop-icon"></i>
+          <div class="drop-text">
+            Drop a file here or <span style="color:var(--brand)">click to browse</span>
+          </div>
+          <div class="drop-hint">Any file type · Max {{ max_size|default:"50 MB" }}</div>
+
+          <!-- chosen file shown inside zone -->
+          <div class="file-chosen" id="fileChosen">
+            <i class="bi bi-file-earmark-check"
+               style="color:var(--brand);font-size:18px;flex-shrink:0"></i>
+            <span class="file-chosen-name" id="fileChosenName"></span>
+            <span class="file-chosen-size" id="fileChosenSize"></span>
+            <button class="file-chosen-clear" id="fileClear" type="button"
+                    title="Remove file">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Options ── -->
+        <div class="mb-3">
+          <label class="form-label">Link expiry</label>
+          <select id="expiresIn" class="form-select">
+            <option value="">Never</option>
+            <option value="1">1 day</option>
+            <option value="7">7 days</option>
+            <option value="30">30 days</option>
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">
+            Password protect
+            <span style="font-weight:400;color:var(--text-muted)">(optional)</span>
+          </label>
+          <input type="password" id="filePassword" class="form-control"
+                 placeholder="Leave blank for public link">
+        </div>
+
+        <button class="btn-upload" id="uploadBtn" disabled>
+          <i class="bi bi-upload"></i>
+          <span id="uploadBtnText">Select a file first</span>
+        </button>
+
+        <!-- ── Progress ── -->
+        <div class="upload-progress" id="uploadProgress">
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="progress-label" id="progressLabel">Uploading…</div>
+        </div>
+
+        <!-- ── Result ── -->
+        <div class="result-card" id="resultCard">
+          <div id="resultTitle"
+               style="font-weight:600;font-size:15px;color:#166534"></div>
+          <div id="resultMsg"
+               style="font-size:13px;color:#166534;margin-top:4px"></div>
+          <div class="result-link" id="resultLink" style="display:none">
+            <span id="resultUrl"></span>
+            <button class="btn-copy" onclick="copyResult()">Copy</button>
+          </div>
+          <button onclick="resetForm()"
+                  style="margin-top:14px;background:none;border:none;
+                         color:var(--brand);font-size:13px;font-weight:600;
+                         cursor:pointer;padding:0">
+            <i class="bi bi-plus-circle me-1"></i>Upload another file
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Sidebar ad -->
+    {% if not request.user.subscription or request.user.subscription.plan.name == "Free" %}
+    <div class="col-lg-3 mt-4 mt-lg-0">
+      <div hx-get="/api/ads/serve/upload_bottom/"
+           hx-trigger="load"
+           hx-swap="innerHTML"
+           style="min-height:120px">
+        <div class="ad-slot">
+          <i class="bi bi-image me-1"></i>Loading ad…
+        </div>
+      </div>
+      <div class="upload-card mt-3" style="padding:20px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px">
+          Go ad-free 🚀
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.5">
+          Unlimited uploads and no ads with Pro.
+        </div>
+        <a href="{% url 'pricing' %}" class="btn-upload"
+           style="font-size:13px;padding:9px;text-decoration:none">
+          See plans
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const dropZone    = document.getElementById('dropZone');
+const fileInput   = document.getElementById('fileInput');
+const fileChosen  = document.getElementById('fileChosen');
+const uploadBtn   = document.getElementById('uploadBtn');
+const CSRF        = "{{ csrf_token }}";
+
+// ── File passed from home page via sessionStorage ─────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const name = sessionStorage.getItem('pendingUpload');
+  if (name) {
+    sessionStorage.removeItem('pendingUpload');
+    showToast(`Ready to upload "${name}" — pick it below.`, 'info');
+  }
+});
+
+// ── Input change (click to browse) ───────────────────────────────────────
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) handleFile(fileInput.files[0]);
+});
+
+// ── Drag over / leave ─────────────────────────────────────────────────────
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+['dragleave', 'dragend'].forEach(ev =>
+  dropZone.addEventListener(ev, () => dropZone.classList.remove('dragover'))
+);
+
+// ── Drop ──────────────────────────────────────────────────────────────────
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  // inject dropped file into the hidden input
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  fileInput.files = dt.files;
+  handleFile(file);
+});
+
+// ── Clear button — must stop propagation so it doesn't open file picker ──
+document.getElementById('fileClear').addEventListener('click', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  resetFileInput();
+});
+
+// ── Handle chosen file ────────────────────────────────────────────────────
+function handleFile(file) {
+  document.getElementById('fileChosenName').textContent = file.name;
+  document.getElementById('fileChosenSize').textContent = fmtBytes(file.size);
+  fileChosen.classList.add('show');
+  dropZone.classList.add('has-file');
+  uploadBtn.disabled = false;
+  document.getElementById('uploadBtnText').textContent = 'Upload file';
+  document.getElementById('resultCard').classList.remove('show');
+}
+
+// ── Upload via XHR (gives us progress events) ─────────────────────────────
+uploadBtn.addEventListener('click', async () => {
+  if (!fileInput.files.length) return;
+
+  const fd = new FormData();
+  fd.append('file',       fileInput.files[0]);
+  fd.append('expires_in', document.getElementById('expiresIn').value);
+  fd.append('password',   document.getElementById('filePassword').value);
+
+  uploadBtn.disabled = true;
+  document.getElementById('uploadBtnText').textContent = 'Uploading…';
+  showProgress(0);
+
+  try {
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', e => {
+      if (e.lengthComputable)
+        showProgress(Math.round(e.loaded / e.total * 100));
+    });
+
+    const res = await new Promise((resolve, reject) => {
+      xhr.open('POST', '/api/files/upload/');
+      xhr.setRequestHeader('X-CSRFToken', CSRF);
+      xhr.onload  = () => resolve(xhr);
+      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.send(fd);
+    });
+
+    hideProgress();
+
+    if (res.status === 201) {
+      showResult(JSON.parse(res.responseText));
+    } else {
+      let msg = 'Upload failed.';
+      try { msg = JSON.parse(res.responseText)?.detail || msg; } catch {}
+      showError(msg);
+    }
+  } catch {
+    hideProgress();
+    showError('Upload failed — please try again.');
+  }
+});
+
+// ── Result display ────────────────────────────────────────────────────────
+function showResult(data) {
+  const card = document.getElementById('resultCard');
+  card.className = 'result-card show';
+  document.getElementById('resultTitle').innerHTML =
+    '<i class="bi bi-check-circle-fill me-2" style="color:#16a34a"></i>Uploaded successfully!';
+  document.getElementById('resultMsg').textContent =
+    `"${data.original_name}" is being processed.`;
+  document.getElementById('resultMsg').style.color = '#166534';
+  const url = data.share_url || `${location.origin}/f/${data.slug}/`;
+  document.getElementById('resultUrl').textContent = url;
+  document.getElementById('resultLink').style.display = 'flex';
+  uploadBtn.disabled = false;
+  document.getElementById('uploadBtnText').textContent = 'Upload file';
+}
+
+function showError(msg) {
+  const card = document.getElementById('resultCard');
+  card.className = 'result-card error show';
+  document.getElementById('resultTitle').innerHTML =
+    `<i class="bi bi-x-circle-fill me-2" style="color:#dc2626"></i>${msg}`;
+  document.getElementById('resultMsg').textContent = '';
+  document.getElementById('resultLink').style.display = 'none';
+  uploadBtn.disabled = false;
+  document.getElementById('uploadBtnText').textContent = 'Try again';
+}
+
+function copyResult() {
+  navigator.clipboard.writeText(
+    document.getElementById('resultUrl').textContent
+  ).then(() => showToast('Link copied!'));
+}
+
+// ── Progress helpers ──────────────────────────────────────────────────────
+function showProgress(pct) {
+  document.getElementById('uploadProgress').classList.add('show');
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent =
+    pct < 100 ? `Uploading… ${pct}%` : 'Processing…';
+}
+function hideProgress() {
+  document.getElementById('uploadProgress').classList.remove('show');
+}
+
+// ── Reset ─────────────────────────────────────────────────────────────────
+function resetForm() {
+  resetFileInput();
+  document.getElementById('resultCard').classList.remove('show');
+  document.getElementById('filePassword').value = '';
+  document.getElementById('expiresIn').value    = '';
+}
+function resetFileInput() {
+  fileInput.value = '';
+  fileChosen.classList.remove('show');
+  dropZone.classList.remove('has-file', 'dragover');
+  uploadBtn.disabled = true;
+  document.getElementById('uploadBtnText').textContent = 'Select a file first';
+}
+
+// ── Bytes formatter ───────────────────────────────────────────────────────
+function fmtBytes(b) {
+  if (b < 1024)    return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(1) + ' MB';
+}
+</script>
+{% endblock %}
