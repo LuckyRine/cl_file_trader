@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Sign in — FileShare Pro{% endblock %}
+
+{% block extra_styles %}
+/* reuse same auth styles */
+.auth-wrap {
+  min-height: calc(100vh - 200px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 16px;
+}
+.auth-card {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 420px; padding: 40px;
+}
+.auth-title { font-size: 24px; font-weight: 600; color: var(--text-main); letter-spacing: -.4px; margin-bottom: 6px; }
+.auth-sub   { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
+.form-label { font-size: 13px; font-weight: 500; color: var(--text-main); margin-bottom: 6px; }
+.form-control {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-main);
+  font-size: 14px; padding: 10px 14px; width: 100%;
+  outline: none; transition: border-color .15s;
+}
+.form-control:focus { border-color: var(--brand); background: var(--card-bg); }
+.form-control.is-invalid { border-color: #dc2626; }
+.btn-submit {
+  width: 100%; padding: 11px;
+  background: var(--brand); color: #fff; border: none;
+  border-radius: var(--radius-sm); font-size: 15px; font-weight: 600;
+  cursor: pointer; margin-top: 8px; transition: background .15s;
+}
+.btn-submit:hover { background: var(--brand-dark); }
+.auth-footer { text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-muted); }
+.auth-footer a { color: var(--brand); text-decoration: none; font-weight: 500; }
+.error-banner {
+  background: #fef2f2; border: 1px solid #fca5a5;
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  font-size: 13px; color: #b91c1c;
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 20px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+
+    <div class="text-center mb-4">
+      <a href="{% url 'home' %}" style="text-decoration:none">
+        <span style="font-size:20px; font-weight:700; color:var(--text-main)">
+          FileShare<span style="color:var(--brand)">Pro</span>
+        </span>
+      </a>
+    </div>
+
+    <div class="auth-title">Welcome back</div>
+    <div class="auth-sub">Sign in to your account.</div>
+
+    {% if error %}
+    <div class="error-banner">
+      <i class="bi bi-exclamation-circle-fill"></i>
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+      <div class="mb-3">
+        <label class="form-label">Email address</label>
+        <input type="email" name="email" value="{{ email|default:'' }}"
+               class="form-control {% if error %}is-invalid{% endif %}"
+               placeholder="you@example.com" autocomplete="email"
+               autofocus required>
+      </div>
+
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label class="form-label mb-0">Password</label>
+          <a href="#" style="font-size:12px; color:var(--brand); text-decoration:none">
+            Forgot password?
+          </a>
+        </div>
+        <input type="password" name="password"
+               class="form-control {% if error %}is-invalid{% endif %}"
+               placeholder="Your password" autocomplete="current-password" required>
+      </div>
+
+      <button type="submit" class="btn-submit">Sign in</button>
+    </form>
+
+    <div class="auth-footer">
+      Don't have an account? <a href="{% url 'register' %}">Sign up free</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

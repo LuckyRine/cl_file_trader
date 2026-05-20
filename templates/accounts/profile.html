@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Profile — FileShare Pro{% endblock %}
+
+{% block extra_styles %}
+.page-header {
+  padding: 32px 0 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+.page-title { font-size: 26px; font-weight: 600; color: var(--text-main); letter-spacing: -.4px; }
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 768px) {
+  .profile-grid { grid-template-columns: 1fr; }
+}
+
+/* Avatar card */
+.avatar-card {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px; text-align: center;
+}
+.avatar-circle {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--brand-dim); color: var(--brand);
+  font-size: 28px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+}
+.avatar-name { font-size: 18px; font-weight: 600; color: var(--text-main); }
+.avatar-email { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+.avatar-joined { font-size: 12px; color: var(--text-light); margin-top: 6px; }
+
+.plan-box {
+  margin: 20px 0;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.plan-box .plan-name {
+  font-weight: 600; font-size: 14px; color: var(--text-main);
+}
+.plan-box .plan-detail {
+  font-size: 12px; color: var(--text-muted); margin-top: 4px;
+}
+
+/* Storage bar */
+.storage-bar-wrap { margin-top: 8px; }
+.storage-labels {
+  display: flex; justify-content: space-between;
+  font-size: 12px; color: var(--text-muted); margin-bottom: 6px;
+}
+.storage-bar {
+  background: var(--border); border-radius: 4px; height: 6px; overflow: hidden;
+}
+.storage-fill { height: 100%; border-radius: 4px; background: var(--brand); }
+
+/* Settings card */
+.settings-card {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.settings-section {
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border);
+}
+.settings-section:last-child { border-bottom: none; }
+.settings-section-title {
+  font-size: 13px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .5px;
+  color: var(--text-muted); margin-bottom: 20px;
+}
+.form-label { font-size: 13px; font-weight: 500; color: var(--text-main); margin-bottom: 6px; }
+.form-control {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-main);
+  font-size: 14px; padding: 9px 14px; width: 100%;
+  outline: none; transition: border-color .15s;
+}
+.form-control:focus { border-color: var(--brand); background: var(--card-bg); }
+.form-control:disabled { opacity: .5; cursor: not-allowed; }
+
+.btn-save {
+  background: var(--brand); color: #fff; border: none;
+  border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+  padding: 9px 20px; cursor: pointer; transition: background .15s;
+}
+.btn-save:hover { background: var(--brand-dark); }
+
+/* Danger zone */
+.danger-zone {
+  border-color: #fca5a5 !important;
+}
+.danger-zone .settings-section-title { color: #dc2626; }
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="page-header">
+    <div class="page-title">Profile</div>
+    <div style="font-size:14px; color:var(--text-muted); margin-top:4px">
+      Manage your account settings
+    </div>
+  </div>
+
+  <div class="profile-grid">
+
+    <!-- Left: Avatar & stats -->
+    <div>
+      <div class="avatar-card">
+        {% if request.user.avatar %}
+          <img src="{{ request.user.avatar.url }}"
+               style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin:0 auto 16px;display:block">
+        {% else %}
+          <div class="avatar-circle">{{ request.user.username|slice:":2"|upper }}</div>
+        {% endif %}
+
+        <div class="avatar-name">{{ request.user.username }}</div>
+        <div class="avatar-email">{{ request.user.email }}</div>
+        <div class="avatar-joined">
+          Joined {{ request.user.created_at|date:"F Y" }}
+        </div>
+
+        <!-- Plan box -->
+        <div class="plan-box">
+          {% with plan=request.user.subscription.plan.name|default:"Free" %}
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="plan-name">{{ plan }} Plan</div>
+              <div class="plan-detail">
+                {{ uploads_month }} upload{{ uploads_month|pluralize }} this month
+              </div>
+            </div>
+            <span class="plan-badge plan-{{ plan|lower }}">{{ plan }}</span>
+          </div>
+          {% endwith %}
+        </div>
+
+        <!-- Storage bar -->
+        <div class="storage-bar-wrap">
+          <div class="storage-labels">
+            <span>Storage used</span>
+            <span>{{ storage_used|filesizeformat }}</span>
+          </div>
+          <div class="storage-bar">
+            <div class="storage-fill" style="width: {{ storage_pct|default:0 }}%"></div>
+          </div>
+        </div>
+
+        <!-- Upgrade button -->
+        {% if not request.user.subscription or request.user.subscription.plan.name == "Free" %}
+        <a href="{% url 'pricing' %}"
+           class="btn-brand d-block text-center mt-4"
+           style="font-size:13px; padding:9px; text-decoration:none">
+          <i class="bi bi-lightning me-1"></i> Upgrade plan
+        </a>
+        {% endif %}
+      </div>
+
+      <!-- Quick links -->
+      <div class="card-fs mt-3 p-4" style="font-size:13px">
+        <a href="{% url 'my_files' %}"
+           style="display:flex;align-items:center;gap:8px;color:var(--text-main);text-decoration:none;padding:8px 0;border-bottom:1px solid var(--border)">
+          <i class="bi bi-folder2" style="color:var(--brand)"></i> My Files
+          <i class="bi bi-chevron-right ms-auto" style="color:var(--text-muted);font-size:11px"></i>
+        </a>
+        <a href="{% url 'upload' %}"
+           style="display:flex;align-items:center;gap:8px;color:var(--text-main);text-decoration:none;padding:8px 0">
+          <i class="bi bi-upload" style="color:var(--brand)"></i> Upload file
+          <i class="bi bi-chevron-right ms-auto" style="color:var(--text-muted);font-size:11px"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Right: Settings forms -->
+    <div>
+      <div class="settings-card">
+
+        <!-- General -->
+        <div class="settings-section">
+          <div class="settings-section-title">General</div>
+          <form method="post" action="{% url 'profile' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control"
+                       value="{{ request.user.username }}">
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label">Email address</label>
+                <input type="email" class="form-control"
+                       value="{{ request.user.email }}" disabled>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px">
+                  Contact support to change email
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Profile picture</label>
+                <input type="file" name="avatar" class="form-control" accept="image/*">
+              </div>
+            </div>
+            <div class="mt-4">
+              <button type="submit" class="btn-save">Save changes</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Password change -->
+        <div class="settings-section">
+          <div class="settings-section-title">Change password</div>
+          <form method="post" action="{% url 'profile' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="change_password">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label">Current password</label>
+                <input type="password" name="current_password" class="form-control"
+                       placeholder="Your current password">
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label">New password</label>
+                <input type="password" name="new_password" class="form-control"
+                       placeholder="Min. 8 characters">
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label">Confirm new password</label>
+                <input type="password" name="new_password2" class="form-control"
+                       placeholder="Repeat new password">
+              </div>
+            </div>
+            <div class="mt-4">
+              <button type="submit" class="btn-save">Update password</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="settings-section danger-zone">
+          <div class="settings-section-title">Danger zone</div>
+          <div style="font-size:14px; color:var(--text-muted); margin-bottom:16px">
+            Deleting your account removes all your files and data permanently.
+            This action cannot be undone.
+          </div>
+          <button onclick="confirmDelete()"
+                  style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;
+                         border-radius:var(--radius-sm);padding:9px 18px;
+                         font-size:13px;font-weight:500;cursor:pointer">
+            <i class="bi bi-trash3 me-1"></i> Delete my account
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function confirmDelete() {
+    if (confirm('Are you sure? This will permanently delete your account and all files.')) {
+      showToast('Account deletion requested.', 'info');
+      // POST to delete endpoint when implemented
+    }
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Create account — FileShare Pro{% endblock %}
+
+{% block extra_styles %}
+.auth-wrap {
+  min-height: calc(100vh - 200px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 16px;
+}
+.auth-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 420px;
+  padding: 40px;
+}
+.auth-title {
+  font-size: 24px; font-weight: 600;
+  color: var(--text-main); letter-spacing: -.4px;
+  margin-bottom: 6px;
+}
+.auth-sub {
+  font-size: 14px; color: var(--text-muted); margin-bottom: 28px;
+}
+.form-label {
+  font-size: 13px; font-weight: 500;
+  color: var(--text-main); margin-bottom: 6px;
+}
+.form-control {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-main);
+  font-size: 14px; padding: 10px 14px; width: 100%;
+  outline: none; transition: border-color .15s;
+}
+.form-control:focus { border-color: var(--brand); background: var(--card-bg); }
+.form-control.is-invalid { border-color: #dc2626; }
+.invalid-feedback {
+  font-size: 12px; color: #dc2626;
+  margin-top: 4px; display: block;
+}
+.btn-submit {
+  width: 100%; padding: 11px;
+  background: var(--brand); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-size: 15px; font-weight: 600;
+  cursor: pointer; margin-top: 8px;
+  transition: background .15s;
+}
+.btn-submit:hover { background: var(--brand-dark); }
+.auth-footer {
+  text-align: center; margin-top: 20px;
+  font-size: 13px; color: var(--text-muted);
+}
+.auth-footer a { color: var(--brand); text-decoration: none; font-weight: 500; }
+.divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 20px 0; color: var(--text-light); font-size: 12px;
+}
+.divider::before, .divider::after {
+  content: ""; flex: 1; height: 1px; background: var(--border);
+}
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+
+    <div class="text-center mb-4">
+      <a href="{% url 'home' %}" style="text-decoration:none">
+        <span style="font-size:20px; font-weight:700; color:var(--text-main)">
+          FileShare<span style="color:var(--brand)">Pro</span>
+        </span>
+      </a>
+    </div>
+
+    <div class="auth-title">Create your account</div>
+    <div class="auth-sub">Free forever. No credit card required.</div>
+
+    <form method="post" action="{% url 'register' %}">
+      {% csrf_token %}
+
+      <div class="mb-3">
+        <label class="form-label">Email address</label>
+        <input type="email" name="email" value="{{ email|default:'' }}"
+               class="form-control {% if errors.email %}is-invalid{% endif %}"
+               placeholder="you@example.com" autocomplete="email" required>
+        {% if errors.email %}
+          <span class="invalid-feedback">{{ errors.email }}</span>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" value="{{ username|default:'' }}"
+               class="form-control {% if errors.username %}is-invalid{% endif %}"
+               placeholder="cooluser123" autocomplete="username" required>
+        {% if errors.username %}
+          <span class="invalid-feedback">{{ errors.username }}</span>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" name="password"
+               class="form-control {% if errors.password %}is-invalid{% endif %}"
+               placeholder="Min. 8 characters" autocomplete="new-password" required>
+        {% if errors.password %}
+          <span class="invalid-feedback">{{ errors.password }}</span>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Confirm password</label>
+        <input type="password" name="password2"
+               class="form-control {% if errors.password2 %}is-invalid{% endif %}"
+               placeholder="Repeat your password" autocomplete="new-password" required>
+        {% if errors.password2 %}
+          <span class="invalid-feedback">{{ errors.password2 }}</span>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn-submit">
+        Create account
+      </button>
+
+      <p style="font-size:12px; color:var(--text-light); text-align:center; margin-top:12px">
+        By signing up you agree to our
+        <a href="#" style="color:var(--text-muted)">Terms</a> and
+        <a href="#" style="color:var(--text-muted)">Privacy Policy</a>.
+      </p>
+    </form>
+
+    <div class="auth-footer">
+      Already have an account? <a href="{% url 'login' %}">Sign in</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

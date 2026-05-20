@@ -7,3 +7,4 @@ db.sqlite3
 .env
 /cl_file_trader/LOGGING_USAGE.py
 /cl_file_trader/settings_default.py
+/apps/ads/migrations/
