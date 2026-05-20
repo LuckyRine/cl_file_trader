@@ -8,3 +8,12 @@ db.sqlite3
 /cl_file_trader/LOGGING_USAGE.py
 /cl_file_trader/settings_default.py
 /apps/ads/migrations/
+/apps/__init__.py
+/apps/accounts/migrations/
+/apps/core/migrations/
+/apps/files/migrations/
+/apps/search/migrations/
+/apps/subscriptions/migrations/
+/logs/
+/media/
+/staticfiles/
